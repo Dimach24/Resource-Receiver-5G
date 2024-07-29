@@ -1,3 +1,6 @@
 [submodule "PbchReceiver"]
 	path = PbchReceiver
 	url = git@github.com:Dimach24/PbchReceiver.git
+[submodule "PBCH_DMRS_Generator-5G"]
+	path = PBCH_DMRS_Generator-5G
+	url = git@github.com:Dimach24/PBCH_DMRS_Generator-5G.git
