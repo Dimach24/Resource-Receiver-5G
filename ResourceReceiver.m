@@ -21,7 +21,7 @@ classdef ResourceReceiver
         end
         function blockIndexLsb=PbchDmRsProcessing(dmrs_linearized,NCellId)
             for i=0:7
-                dmrs_bank(i+1)=generatePbchDmRs(i,NCellId);
+                dmrs_bank(i+1,:)=generatePbchDmRs(i,NCellId);
             end
             corr_data=xcorr(dmrs_bank,dmrs_linearized);
             corr_max=max(corr_data);
