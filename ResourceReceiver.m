@@ -46,6 +46,7 @@ classdef ResourceReceiver
             end
             corr_max=max(corr_data,[],2);
             [~,blockIndexLsb]=max(corr_max);
+            blockIndexLsb=blockIndexLsb-1;
         end
     end
 end
