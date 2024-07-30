@@ -2,21 +2,39 @@ classdef ResourceReceiver
     methods(Static)
         function [pbch,dmrs]=PbchExtraction(Rgrid,toffset,foffset,NCellId)
             nu=mod(NCellId,4);
-            indexes_fsolid=find(mod(1:1:240,4)==1);
-            indexes_fsplitted=indexes_fsolid(indexes_fsolid<46 | indexes_fsolid>192);
-            indexes_fsolid=indexes_fsolid + nu +foffset;
-            indexes_fsplitted=indexes_fsplitted + nu +foffset;
+            d_solid_i=(0:4:236)+nu;
+            p_solid_i=0:1:239;
+            p_solid_i(d_solid_i+1)=[];
+
+            d_splitted_i=[(0:4:44)+nu, (192:4:236)+nu];
+            p_splitted_i=[0:47,192:239];
+            p_splitted_i((0:4:92)+nu+1)=[];
+
+            
             dmrs=[...
-                reshape(Rgrid(indexes_fsolid,   toffset+1),1,[]),...
-                reshape(Rgrid(indexes_fsplitted,toffset+2),1,[]),...
-                reshape(Rgrid(indexes_fsolid,   toffset+3),1,[])...
+                Rgrid(foffset+d_solid_i+1,toffset+1+1).',...
+                Rgrid(foffset+d_splitted_i+1,toffset+2+1).',...
+                Rgrid(foffset+d_solid_i+1,toffset+3+1).'...
                 ];
             pbch=[...
-                reshape(Rgrid(setdiff(1:240+foffset,indexes_fsolid)     ,toffset+1),1,[]),...
-                reshape(Rgrid(setdiff(1:48+foffset,indexes_fsplitted)   ,toffset+2),1,[]),...
-                reshape(Rgrid(setdiff(193:240+foffset,indexes_fsplitted),toffset+2),1,[]),...
-                reshape(Rgrid(setdiff(1:240+foffset,indexes_fsolid)     ,toffset+3),1,[]),...
+                Rgrid(foffset+p_solid_i+1,toffset+1+1).',...
+                Rgrid(foffset+p_splitted_i+1,toffset+2+1).',...
+                Rgrid(foffset+p_solid_i+1,toffset+3+1).'...
                 ];
+            % Rgrid(foffset+p_solid_i+1,toffset+1+1)=ones(1,180)*10;
+            % Rgrid(foffset+p_splitted_i+1,toffset+2+1)=ones(1,72)*10;
+            % Rgrid(foffset+p_solid_i+1,toffset+3+1)=ones(1,180)*10;
+            % Rgrid(foffset+d_solid_i+1,toffset+1+1)=ones(1,60)*5;
+            % Rgrid(foffset+d_splitted_i+1,toffset+2+1)=ones(1,24)*5;
+            % Rgrid(foffset+d_solid_i+1,toffset+3+1)=ones(1,60)*5;
+            % plt=pcolor(abs(Rgrid(1:301,1:end)));
+            % plt.EdgeColor='none';
+            % ca=gca();
+            % ca.YDir='normal';
+            % xlim([1,50]);
+            % xlabel('l+1 (номер OFDM символа +1)')
+            % ylabel('k (номер поднесущей)')
+
             pbch=QpskDemodulation(pbch);
         end
         function blockIndexLsb=PbchDmRsProcessing(dmrs_linearized,NCellId)
