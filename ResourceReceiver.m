@@ -1,7 +1,12 @@
 classdef ResourceReceiver
     methods(Static)
         function [pbch,dmrs]=PbchExtraction(Rgrid,toffset,foffset,NCellId)
+            % extracts pbch bitstream and dmrs complex 
+            % amplitudes from the resource grid
+            
             nu=mod(NCellId,4);
+            
+            % subcarrier index initialization 
             d_solid_i=(0:4:236)+nu;
             p_solid_i=0:1:239;
             p_solid_i(d_solid_i+1)=[];
@@ -10,7 +15,7 @@ classdef ResourceReceiver
             p_splitted_i=[0:47,192:239];
             p_splitted_i((0:4:92)+nu+1)=[];
 
-            
+            % extraction from the resource grid 
             dmrs=[...
                 Rgrid(foffset+d_solid_i+1,toffset+1+1).',...
                 Rgrid(foffset+d_splitted_i+1,toffset+2+1).',...
@@ -21,29 +26,22 @@ classdef ResourceReceiver
                 Rgrid(foffset+p_splitted_i+1,toffset+2+1).',...
                 Rgrid(foffset+p_solid_i+1,toffset+3+1).'...
                 ];
-            % Rgrid(foffset+p_solid_i+1,toffset+1+1)=ones(1,180)*10;
-            % Rgrid(foffset+p_splitted_i+1,toffset+2+1)=ones(1,72)*10;
-            % Rgrid(foffset+p_solid_i+1,toffset+3+1)=ones(1,180)*10;
-            % Rgrid(foffset+d_solid_i+1,toffset+1+1)=ones(1,60)*5;
-            % Rgrid(foffset+d_splitted_i+1,toffset+2+1)=ones(1,24)*5;
-            % Rgrid(foffset+d_solid_i+1,toffset+3+1)=ones(1,60)*5;
-            % plt=pcolor(abs(Rgrid(1:301,1:end)));
-            % plt.EdgeColor='none';
-            % ca=gca();
-            % ca.YDir='normal';
-            % xlim([1,50]);
-            % xlabel('l+1 (номер OFDM символа +1)')
-            % ylabel('k (номер поднесущей)')
-
+            % converting into bitstream
             pbch=QpskDemodulation(pbch);
         end
         function blockIndexLsb=PbchDmRsProcessing(dmrs_linearized,NCellId)
+            % finds the block index that corresponds to the reference signal
+
+            dmrs_bank=zeros(8,144);
+            % generating signals
             for i=0:7
                 dmrs_bank(i+1,:)=generatePbchDmRs(i,NCellId);
             end
+            % correlating signals
             for i=1:8
                 corr_data(i,:)=abs(xcorr(dmrs_bank(i,:),dmrs_linearized));
             end
+            % maximum likehood search
             corr_max=max(corr_data,[],2);
             [~,blockIndexLsb]=max(corr_max);
             blockIndexLsb=blockIndexLsb-1;
